@@ -72,7 +72,7 @@ def getDataFrameBilanco(table):
         df = df.iloc[1:, [2, 6, 7, 8]]
         new_cols = ['titles',
                     'footnotes',
-                    cols[1], cols[2]]
+                    cols[1] + '-Toplam', cols[2] + '-Toplam']
         # replace old cari donem col name with titles
         df.columns = new_cols
         # drop rows with all nan
@@ -88,60 +88,52 @@ def getDataFrameBilanco(table):
         df = df.dropna(axis=0, how='all')
 
         return df
+
 
 def getDataFrameGelir(table):
     # read table
     dfs = pd.read_html(table.prettify(), header=0)
     df = dfs[0]
     cols = list(df.columns)
-    if len(cols) == 9:
-        df = df.iloc[1:, [2, 6, 7, 8]]
+    print(len(cols))
+    if len(cols) == 12:
+        df = df.iloc[1:, [2, 6, 7, 8, 9, 10]]
         new_cols = ['titles',
                     'footnotes',
-                    cols[1], cols[2]]
+                    cols[1], cols[2], cols[3], cols[4]
+                    ]
+        print('new_cols: ', new_cols)
         # replace old cari donem col name with titles
         df.columns = new_cols
         # drop rows with all nan
         df = df.dropna(axis=0, how='all')
         return df
-    if len(cols) == 13:
-        df = df.iloc[1:, [2, 6, 7, 8, 9, 10, 11, 12]]
+    if len(cols) == 10:
+        df = df.iloc[1:, [2, 6, 7, 8]]
         new_cols = ['titles',
                     'footnotes',
-                    cols[1] + '-YP', cols[1] + '-TP', cols[1] + '-Toplam',
-                    cols[2] + '-YP', cols[2] + '-TP', cols[2] + '-Toplam']
+                    cols[1], cols[2]
+                    ]
+        print('new_cols: ', new_cols)
         df.columns = new_cols
         df = df.dropna(axis=0, how='all')
 
         return df
 
 
-url = '/home/cem/PycharmProjects/htmlParseInf/Bilanco-zip/excels/2017/AKBNK_2017/AKBNK_602678_2017_1.html'
-
-myhtml = BeautifulSoup(open(url))
-tabbles = getWholeTables(myhtml)
-konsolideText = getKonsolideFlag(myhtml)
-
-tab = tabbles[0]
-ax = getHeaderandTable(tabbles)
-headerTableList = list(ax.items())
-
-tab_bil = headerTableList[0][1]
-dfsBil = pd.read_html(tab_bil.prettify(), header=0)
-
-tab_nakit = headerTableList[2][1]
-dfsNak = pd.read_html(tab_nakit.prettify(), skiprows=2, header=0)
-
-tab_gelir = headerTableList[3][1]
-dfsGelir = pd.read_html(tab_nakit.prettify(), skiprows=2, header=0)
-
 bilancos = []
-karzarars = []
+gelirs = []
 nakits = []
+k_bilancos = []
+k_gelirs = []
+k_nakits = []
 
 year = 2017
 mainDir = '/home/cem/PycharmProjects/htmlParseInf/Bilanco-zip/excels/2017/'
-for stock in Bist30Stocks:
+stock2 = ['ASELS']
+for stock in stock2:
+    a = time.time()
+    print(stock, ' is started')
     readDir = mainDir + '{}_{}'.format(stock, year)
 
     if os.path.isdir(readDir):
@@ -160,19 +152,42 @@ for stock in Bist30Stocks:
                         konsolide_f = 1
 
                     myTables = getWholeTables(myhtml)
+                    print(year, donem, konsolide_f, '#Tables -->', len(myTables))
                     headerAndTables = getHeaderandTable(Tables=myTables)
 
                     for header, table in headerAndTables.items():
                         if header in bilancoHeaders:
-                            print(header)
+                            # print(header, '--> dfbilanco')
                             df = getDataFrameBilanco(table)
-                            bilancos.append(df)
-                        if header in nakitAkisiHeaders:
-                            print(header)
-                            df = getDataFrameNakit(table)
-                            nakits.append(df)
+                            df['stock'] = stock
+                            df['period'] = '{}_{}'.format(year, donem)
+                            if konsolide_f == 1:
+                                k_bilancos.append(df)
+                            if konsolide_f == 0:
+                                bilancos.append(df)
 
-                        if header in karZararHeaders:
-                            print(header)
-                            df = getDataFrame(table)
-                            karzarars.append(df)
+                        elif header in nakitAkisiHeaders:
+                            # print(header, '--> dfnakit')
+                            df = getDataFrameNakit(table)
+                            df['stock'] = stock
+                            df['period'] = '{}_{}'.format(year, donem)
+                            if konsolide_f == 1:
+                                k_nakits.append(df)
+                            if konsolide_f == 0:
+                                nakits.append(df)
+
+                        elif header in karZararHeaders:
+                            # print(header, '--> dfgelir')
+                            df = getDataFrameGelir(table)
+                            print('after operation: ', df.columns)
+                            df['stock'] = stock
+                            df['period'] = '{}_{}'.format(year, donem)
+                            if konsolide_f == 1:
+                                k_gelirs.append(df)
+                            if konsolide_f == 0:
+                                gelirs.append(df)
+
+                        else:
+                            print(header, ' hesaba katilmadi')
+    b = time.time()
+    print('lasted ', b - a)
