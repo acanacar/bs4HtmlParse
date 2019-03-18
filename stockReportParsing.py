@@ -88,6 +88,18 @@ def getDataFrameBilanco(table):
         df = df.dropna(axis=0, how='all')
 
         return df
+    if len(cols) == 10:
+        df = df.iloc[1:, [2, 6, 7, 8, 9]]
+        new_cols = ['titles',
+                    'footnotes',
+                    cols[1] + '-Toplam', cols[2] + '-Toplam', cols[3] + '-Toplam']
+        df.columns = new_cols
+        df = df.dropna(axis=0, how='all')
+
+        return df
+
+    else:
+        print(len(cols), ' bulunamadi')
 
 
 def getDataFrameGelir(table):
@@ -95,14 +107,12 @@ def getDataFrameGelir(table):
     dfs = pd.read_html(table.prettify(), header=0)
     df = dfs[0]
     cols = list(df.columns)
-    print(len(cols))
     if len(cols) == 12:
         df = df.iloc[1:, [2, 6, 7, 8, 9, 10]]
         new_cols = ['titles',
                     'footnotes',
                     cols[1], cols[2], cols[3], cols[4]
                     ]
-        print('new_cols: ', new_cols)
         # replace old cari donem col name with titles
         df.columns = new_cols
         # drop rows with all nan
@@ -114,7 +124,6 @@ def getDataFrameGelir(table):
                     'footnotes',
                     cols[1], cols[2]
                     ]
-        print('new_cols: ', new_cols)
         df.columns = new_cols
         df = df.dropna(axis=0, how='all')
 
@@ -128,10 +137,10 @@ k_bilancos = []
 k_gelirs = []
 k_nakits = []
 
-year = 2017
-mainDir = '/home/cem/PycharmProjects/htmlParseInf/Bilanco-zip/excels/2017/'
+year = 2018
+mainDir = '/home/cem/PycharmProjects/htmlParseInf/Bilanco-zip/excels/2018/'
 stock2 = ['ASELS']
-for stock in stock2:
+for stock in Bist30Stocks:
     a = time.time()
     print(stock, ' is started')
     readDir = mainDir + '{}_{}'.format(stock, year)
@@ -152,7 +161,7 @@ for stock in stock2:
                         konsolide_f = 1
 
                     myTables = getWholeTables(myhtml)
-                    print(year, donem, konsolide_f, '#Tables -->', len(myTables))
+                    # print(year, donem, konsolide_f, '#Tables -->', len(myTables))
                     headerAndTables = getHeaderandTable(Tables=myTables)
 
                     for header, table in headerAndTables.items():
@@ -179,7 +188,6 @@ for stock in stock2:
                         elif header in karZararHeaders:
                             # print(header, '--> dfgelir')
                             df = getDataFrameGelir(table)
-                            print('after operation: ', df.columns)
                             df['stock'] = stock
                             df['period'] = '{}_{}'.format(year, donem)
                             if konsolide_f == 1:
@@ -188,6 +196,30 @@ for stock in stock2:
                                 gelirs.append(df)
 
                         else:
-                            print(header, ' hesaba katilmadi')
+                            continue
+                            # print(header, ' hesaba katilmadi')
     b = time.time()
     print('lasted ', b - a)
+
+
+def storeFrame2018(inputlist, outputname, outputpath):
+    dataframe = pd.concat(inputlist)
+    dataframe.to_pickle('{}/{}.pkl'.format(outputpath, outputname))
+    dataframe.to_excel('/home/cem/Desktop/{}.xls'.format(outputname))
+
+
+storeFrame2018(inputlist=k_gelirs,
+               outputname='2018_1234_G_k',
+               outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
+storeFrame2018(inputlist=gelirs,
+               outputname='2018_1234_G', outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
+storeFrame2018(inputlist=k_nakits,
+               outputname='2018_1234_N_k',
+               outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
+storeFrame2018(inputlist=nakits,
+               outputname='2018_1234_N', outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
+storeFrame2018(inputlist=k_bilancos,
+               outputname='2018_1234_B_k',
+               outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
+storeFrame2018(inputlist=bilancos,
+               outputname='2018_1234_B', outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
