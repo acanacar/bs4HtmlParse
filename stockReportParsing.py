@@ -223,3 +223,8 @@ storeFrame2018(inputlist=k_bilancos,
                outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
 storeFrame2018(inputlist=bilancos,
                outputname='2018_1234_B', outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
+
+storeFrame2019(inputlist=bilancos,
+               outputname='2019_1234_B', outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
+
+

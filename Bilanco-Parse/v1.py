@@ -36,8 +36,14 @@ def getWholeTables(html):
             'class'] and 'financial-header-table' not in tag['class'])
     return wholeTables
 
+def getKonsolideFlag(html):
+    if html:
+        wholeTables = html.find_all(lambda tag: tag.name == 'table' and 'financial-header-table' in tag['class'])
+        konsolideText = wholeTables[0].find_all('td')[-1].text
+    return konsolideText
 
-def get_table_rows(table, *args):
+
+def get_table_rows2018(table, *args):
     tbody = table.find('tbody')
     trows = tbody.findChildren('tr', recursive=False)
     cols = {}
