@@ -1,11 +1,7 @@
 import pickle
 from bs4 import BeautifulSoup
 import requests
-import time
-
-pkl_file = open('/home/cem/PycharmProjects/htmlParseInf/secim/2014Result.pkl', 'rb')
-myDict = pickle.load(pkl_file)
-cities = [a[1] for a, b in myDict.items()]
+import urllib3
 
 
 def toeng(singleLine):
@@ -22,29 +18,46 @@ def getResults(html):
     return partyText
 
 
-myDict = {}
-for city in cities:
-    print(city, ' basladi')
-    city = city.lower()
-    city = toeng(city)
-    url = 'https://secim.haberler.com/2009/{}-secim-sonuclari/'.format(city)
-    response = requests.get(url, verify=False)
-    myhtml = BeautifulSoup(response.text, 'lxml')
-    if myhtml:
-        try:
-            result = getResults(myhtml)
-            myDict[city] = result
-        except Exception as e:
-            print(str(e), city, '!!')
-            continue
-    else:
-        print('there is no html for ', city)
+def read_pickle(path):
+    pkl_file = open(path, 'rb')
+    myDict = pickle.load(pkl_file)
+    return myDict
+
+
+def getHtml_doParse_doStore(cities):
+    myDict = {}
+    for city in cities:
+        print(city, ' basladi')
+        city = city.lower()
+        city = toeng(city)
+        url = 'https://secim.haberler.com/2009/{}-secim-sonuclari/'.format(city)
+        response = requests.get(url, verify=False)
+        myhtml = BeautifulSoup(response.text, 'lxml')
+        if myhtml:
+            try:
+                result = getResults(myhtml)
+                myDict[city] = result
+            except Exception as e:
+                print(str(e), city, '!!')
+                continue
+        else:
+            print('there is no html for ', city)
+    return myDict
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# get cities of 2014 results dict
+Dict2014 = read_pickle('/home/cem/PycharmProjects/htmlParseInf/secim/2014Result.pkl')
+cities = [a[1] for a, b in Dict2014.items()]
+
+# get results of Dict 2009
+Dict2009 = getHtml_doParse_doStore(cities=cities)
+
 
 import pickle
 
 output = open('/home/cem/PycharmProjects/htmlParseInf/secim/2009Result.pkl', 'wb')
 
-pickle.dump(myDict, output)
+pickle.dump(Dict2009, output)
 output.close()
 
-print(myDict)
