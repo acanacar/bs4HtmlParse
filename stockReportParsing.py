@@ -1,6 +1,7 @@
 from v2 import *
 import pandas as pd
 import numpy as np
+import math
 
 def doDiminish(x1, x2): return x1 - x2
 
@@ -52,6 +53,19 @@ def my_reduce_w_range(func, seq, range):
                     return np.nan
         ind += 1
     return np.nan
+
+def flagDipToplam(data, range, colInd):
+    colName = '{}_range_F'.format(range)
+    data[colName] = np.nan
+    i = 0
+    while i < len(data):
+        a = my_reduce_w_range(doDiminish, data.iloc[i:i + range + 1, colInd].values, range)
+        if not (math.isnan(a)):
+            print(i)
+            data.at[i, [colName]] = a
+        i += 1
+    return data
+
 ''' 2017 PARSING !!!! '''
 
 
