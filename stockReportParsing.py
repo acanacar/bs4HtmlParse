@@ -1,6 +1,57 @@
 from v2 import *
 import pandas as pd
+import numpy as np
 
+def doDiminish(x1, x2): return x1 - x2
+
+
+def my_reduce(func, seq):
+    first = seq[0]
+    if first == 0:
+        return np.nan
+
+    ind = 0
+    while ind < len(seq[1:]):
+        item = seq[1:][ind]
+        # next item is greater than current item
+        if first < item:
+            return np.nan
+        else:
+            first = func(first, item)
+            if first < 0:
+                return np.nan
+            if first == 0:
+                print('first: ', first)
+                print('item: ', item)
+                return ind + 1
+        ind += 1
+    return np.nan
+
+
+def my_reduce_w_range(func, seq, range):
+    first = seq[0]
+    if first == 0:
+        return np.nan
+
+    ind = 0
+    while ind < len(seq[1:]):
+        item = seq[1:][ind]
+        # next item is greater than current item
+        if first < item:
+            return np.nan
+        else:
+            first = func(first, item)
+            if first < 0:
+                return np.nan
+            if first == 0:
+                print('first: ', first)
+                print('item: ', item)
+                if ind + 1 == range:
+                    return ind + 1
+                else:
+                    return np.nan
+        ind += 1
+    return np.nan
 ''' 2017 PARSING !!!! '''
 
 
