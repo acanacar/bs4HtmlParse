@@ -1,1 +1,5 @@
-Bilanco-Parse/*
+BilancoParse
+outputs/*
+.idea
+trash/*
+venv
