@@ -74,18 +74,34 @@ def my_reduce_w_range(func, seq, range):
         ind += 1
     return np.nan
 
-def flagDipToplam(data, range, colInd):
-    colName = '{}_range_F'.format(range)
+
+def flagDipToplam(data, step):
+    colName = '{}_range_F'.format(step)
     data[colName] = np.nan
     i = 0
     while i < len(data):
-        a = my_reduce_w_range(doDiminish, data.iloc[i:i + range + 1, colInd].values, range)
+        a = my_reduce_w_range(doDiminish, data.loc[i:i + step + 1, 'colDipToplam'].values, step)
         if not (math.isnan(a)):
             print(i)
             data.at[i, [colName]] = a
         i += 1
+        if i % 1000 == 0:
+            print(i)
     return data
 
+
+def runSubTotal(data, maxstep):
+    # coldiptoplam converting into float
+    data['colDipToplam'] = data['colDipToplam'].astype(str).str.replace('.', '').astype(float)
+    datav2 = data.copy()
+    for i in range(1, maxstep):
+        print(i)
+        datav2 = flagDipToplam(data=datav2, step=i)
+        print(i, 'sona erdi')
+
+    data['max'] = datav2.iloc[:, -(maxstep - 1):].max(axis=1)
+    datav2['max'] = data['max']
+    return data, datav2
 ''' 2017 PARSING !!!! '''
 
 
