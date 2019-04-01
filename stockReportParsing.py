@@ -6,6 +6,20 @@ import math
 def doDiminish(x1, x2): return x1 - x2
 
 
+def renameCols(data):
+    lokkup = {'03': '1', '06': '2', '09': '3', '12': '4'}
+    newCols = []
+    for col in df.columns:
+        if col.startswith(('30', '31')):
+            colv1 = col.replace('-', '.')
+            collist = colv1.split('.')
+            newCol = '{}-{}-{}'.format(collist[2], lokkup[collist[1]], collist[3])
+        else:
+            newCol = col
+        newCols.append(newCol)
+    data.columns = newCols
+    return data
+
 def my_reduce(func, seq):
     first = seq[0]
     if first == 0:
