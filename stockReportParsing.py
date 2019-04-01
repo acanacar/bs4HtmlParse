@@ -59,12 +59,18 @@ def my_reduce_w_range(func, seq, range):
             if first < 0:
                 return np.nan
             if first == 0:
-                print('first: ', first)
-                print('item: ', item)
+                print('first: ', first, 'item: ', item)
                 if ind + 1 == range:
                     return ind + 1
                 else:
-                    return np.nan
+                    try:
+                        itemnext = seq[1:][ind + 1]
+                        if itemnext == 0:
+                            ind += 1
+                            continue
+                    except Exception as e:
+                        print(str(e))
+                        return np.nan
         ind += 1
     return np.nan
 
