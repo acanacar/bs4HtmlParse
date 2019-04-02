@@ -97,3 +97,49 @@ def findZeroRows(data):
         if math.isnan(r['colDipToplam']):
             dropRows.append(i)
     return dropRows
+
+
+def findMaxSubCount(data, maxStep):
+    for j in range(maxStep, 0, -1):
+        data_v = runSubTotalUnique(data=data, step=j)
+        x = data_v.iloc[:, -1]
+        a = sum([not bool(math.isnan(b)) for b in x])
+        if a > 0:
+            return j
+
+
+def addRemoveDataFrame(data):
+    dfList = []
+    dropIndices = []
+    colend = data.columns[-1]
+    for i, r in data.iterrows():
+        if math.isnan(r[colend]):
+            continue
+        else:
+            intcolend = int(r[colend])
+            d = data.loc[i + 1:i + 1 + intcolend, :]
+            d['SubCode'] = str(r['tableindex']) + '.'
+            dfList.append(d)
+            l = list(range(i + 1, i + 1 + intcolend))
+            dropIndices = dropIndices + l
+
+    return dfList, dropIndices
+
+
+def getMaxSubCount(data):
+    maxSubCount = findMaxSubCount(data=data, maxStep=10)
+    return maxSubCount
+
+
+def run(data):
+    maxSubCount = getMaxSubCount(data=data)
+    print('maxSubCount: ', maxSubCount)
+    if maxSubCount > 0:
+        df = data
+        df = runSubTotalUnique(data=df, step=maxSubCount)
+        dfList, dropIndices = addRemoveDataFrame(data=df)
+        df = df.drop(dropIndices)
+        df.index = range(0, len(df))
+        return df, dfList
+    else:
+        print('Process is completed')
