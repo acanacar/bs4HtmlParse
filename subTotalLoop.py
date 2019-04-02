@@ -65,3 +65,35 @@ def flagDipToplam(data, step):
         if i % 1000 == 0:
             print(i)
     return data
+
+
+def runSubTotal(data, maxstep):
+    # coldiptoplam converting into float
+    data['colDipToplam'] = data['colDipToplam'].astype(str).str.replace('.', '').astype(float)
+    datav2 = data.copy()
+    for i in range(1, maxstep):
+        print(i)
+        datav2 = flagDipToplam(data=datav2, step=i)
+        print(i, 'sona erdi')
+
+    return datav2
+
+
+def runSubTotalUnique(data, step):
+    # sadece 1 tane step icin yapilacak subtotal.
+    # coldiptoplam converting into float
+    data['colDipToplam'] = data['colDipToplam'].astype(str).str.replace('.', '').astype(float)
+    datav2 = data.copy()
+    datav2 = flagDipToplam(data=datav2, step=step - 1)
+
+    return datav2
+
+
+def findZeroRows(data):
+    dropRows = []
+    for i, r in data.iterrows():
+        if r['colDipToplam'] == 0:
+            dropRows.append(i)
+        if math.isnan(r['colDipToplam']):
+            dropRows.append(i)
+    return dropRows
