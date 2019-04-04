@@ -226,3 +226,23 @@ def getReadyPart2(data):
     data1 = data1.sort_values(by=['tableindex'])
     data1.index = range(0, len(data1))
     return data1
+
+
+def part2(data):
+    """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
+    main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
+    resultLookups = {}
+    certainValue = 1
+    while certainValue < 100:
+        try:
+            dicLookup, data_new = runPart2(data=data)
+            if len(data_new.columns) != len(data.columns):
+                print(certainValue, ' icin column sayisinda artis olustu.: ', data_new.columns)
+            data = data_new
+            resultLookups.update(dicLookup)
+        except Exception as e:
+            print(str(e))
+            break
+        print('tur: ', certainValue)
+        certainValue += 1
+    return resultLookups
