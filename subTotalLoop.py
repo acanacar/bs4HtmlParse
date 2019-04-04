@@ -186,3 +186,26 @@ def Part1(data):
     DatafN.index = range(0, len(DatafN))
 
     return DatafN
+
+
+
+def runPart2(data):
+    maxSubCount = findMaxSubCount(data=data, maxStep=15)
+    print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
+
+    if maxSubCount:
+        # maxSubCount_flag column is added
+        data_w_flag = runSubTotalUnique(data=data, step=maxSubCount)
+        indices = list(data_w_flag.index[data_w_flag[data_w_flag.columns[-1]].notnull()])
+        dicLookup = {}
+        for i in indices:
+            val = data.loc[i, 'tableindex']
+            keys = data.loc[i + 1:i + 10, 'tableIndexSubCodeJoin']
+            dic = {key: val for key in keys}
+            dicLookup.update(dic)
+
+        data_wo_flag = data_w_flag.iloc[:, :-1].drop(indices)
+        data_wo_flag.index = range(0, len(data_wo_flag))
+        return dicLookup, data_wo_flag
+    else:
+        print('Process is completed')
