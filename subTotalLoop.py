@@ -218,6 +218,8 @@ def getReadyPart2(data):
     foundKalems = set([int(i[:-1]) for i in data['SubCode'].values if type(i) == str])
     data1 = data.copy()
 
+    '''bu partta yaptigim calismada alt kalemlerini bulamadiklarimizi her defasinda dataframeden cikaracagim.Bunu bir
+    onceki parttaki calismada yapmadim.Cunku bu bulunamayan kalemleri tekrardan bulmak icin yaptigim bir calisma.'''
     data1 = data1.loc[~data1['tableindex'].isin(foundKalems)]
 
     data1['tableIndexSubCodeJoin'] = data1.apply(join2col, axis=1)
