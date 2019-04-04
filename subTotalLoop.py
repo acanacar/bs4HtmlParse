@@ -132,14 +132,25 @@ def getMaxSubCount(data):
 
 
 def run(data):
-    maxSubCount = getMaxSubCount(data=data)
-    print('maxSubCount: ', maxSubCount)
+    maxSubCount = findMaxSubCount(data=data, maxStep=15)
+    # 3 maxsubcount demektirki 3 tane alt item toplami uste esit olan item mevcut.
+    print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
     if maxSubCount > 0:
         df = data
         df = runSubTotalUnique(data=df, step=maxSubCount)
+        # print('runSubTotalUnique sona erdi')
         dfList, dropIndices = addRemoveDataFrame(data=df)
+        # print('addRemoveDataFrame sona erdi')
         df = df.drop(dropIndices)
         df.index = range(0, len(df))
+        df = df.iloc[:, :-1]
         return df, dfList
     else:
         print('Process is completed')
+
+def join2col(x):
+    if type(x['SubCode']) == str:
+        return int(x['SubCode'][:-1])
+    else:
+        return x['tableindex']
+
