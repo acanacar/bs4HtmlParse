@@ -209,3 +209,18 @@ def runPart2(data):
         return dicLookup, data_wo_flag
     else:
         print('Process is completed')
+
+
+
+
+def getReadyPart2(data):
+    # alt kalemleri bulunmus olanlarin table indexleri listesi
+    foundKalems = set([int(i[:-1]) for i in data['SubCode'].values if type(i) == str])
+    data1 = data.copy()
+
+    data1 = data1.loc[~data1['tableindex'].isin(foundKalems)]
+
+    data1['tableIndexSubCodeJoin'] = data1.apply(join2col, axis=1)
+    data1 = data1.sort_values(by=['tableindex'])
+    data1.index = range(0, len(data1))
+    return data1
