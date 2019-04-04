@@ -131,7 +131,7 @@ def getMaxSubCount(data):
     return maxSubCount
 
 
-def run(data):
+def runPart1(data):
     maxSubCount = findMaxSubCount(data=data, maxStep=15)
     # 3 maxsubcount demektirki 3 tane alt item toplami uste esit olan item mevcut.
     print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
@@ -154,3 +154,35 @@ def join2col(x):
     else:
         return x['tableindex']
 
+def getReadyPart1(data):
+    data.index = range(0, len(data))
+    data['colDipToplam'] = data['colDipToplam'].astype(str).str.replace('.', '').astype(float)
+    zeroRowsIndices = findZeroRows(data)
+    data = data.drop(zeroRowsIndices)
+    data.index = range(0, len(data))
+    return data
+
+
+def Part1(data):
+    certainValue = 1
+    mainDfList = []
+    lastdfOp = data
+    while certainValue < 100:
+        try:
+            data, dfList = runPart1(data=data)
+            lastdfOp = data
+            mainDfList += dfList
+        except Exception as e:
+            print(str(e))
+            break
+        print('tur: ', certainValue)
+        certainValue += 1
+
+    Dfs = pd.concat(mainDfList)
+    DatafN = pd.concat([Dfs, lastdfOp])
+    DatafN = DatafN.dropna(how='all', axis='columns')
+
+    DatafN = DatafN.sort_values(by=['tableindex'])
+    DatafN.index = range(0, len(DatafN))
+
+    return DatafN
