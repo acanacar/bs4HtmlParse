@@ -1,22 +1,61 @@
 import numpy as np
 import math
-from BilancoParse.constants import *
 import pandas as pd
+
+
+def join2col(x):
+    if type(x['SubCode']) == str:
+        return int(x['SubCode'][:-1])
+    else:
+        return x['tableindex']
 
 
 def renameCols(data):
     lokkup = {'03': '1', '06': '2', '09': '3', '12': '4'}
     newCols = []
-    for col in df.columns:
-        if col.startswith(('30', '31')):
-            colv1 = col.replace('-', '.')
-            collist = colv1.split('.')
+    for col in data.columns:
+        colv1 = col.replace('Bir Önceki Dönem', '')
+        colv2 = colv1.replace('Cari Dönem', '')
+        colv3 = colv2.replace('Önceki Dönem', '')
+        colv4 = colv3.replace(' ', '')
+        if colv4.startswith(('30', '31')):
+            colv5 = colv4.replace('-', '.')
+            collist = colv5.split('.')
             newCol = '{}-{}-{}'.format(collist[2], lokkup[collist[1]], collist[3])
         else:
-            newCol = col
+            newCol = colv4
         newCols.append(newCol)
+
     data.columns = newCols
     return data
+
+
+def createColDipToplam(data):
+    for i, r in data.iterrows():
+        try:
+            periodRow = r['period']
+            colToGet = '{}-{}-Toplam'.format(periodRow[:4], periodRow[-1:])
+        except Exception as e:
+            print(str(e), i)
+            continue
+        try:
+            if r[colToGet]:
+                data.loc[i, 'colDipToplam'] = r[colToGet]
+            else:
+                data.loc[i, 'colDipToplam'] = np.nan
+        except Exception as e:
+            print(str(e), i, '-')
+    return data
+
+
+def findZeroRows(data):
+    dropRows = []
+    for i, r in data.iterrows():
+        if r['colDipToplam'] == 0:
+            dropRows.append(i)
+        if math.isnan(r['colDipToplam']):
+            dropRows.append(i)
+    return dropRows
 
 
 def doDiminish(x1, x2): return x1 - x2
@@ -31,24 +70,19 @@ def my_reduce_w_range(func, seq, range):
     while ind < len(seq[1:]):
         item = seq[1:][ind]
         # next item is greater than current item
-        if first < item:
-            return np.nan
-        else:
-            first = func(first, item)
-            if first < 0:
-                return np.nan
-            if first == 0:
-                if ind + 1 == range:
-                    return ind + 1
-                else:
-                    try:
-                        itemnext = seq[1:][ind + 1]
-                        if itemnext == 0:
-                            ind += 1
-                            continue
-                    except Exception as e:
-                        print(str(e))
-                        return np.nan
+        first = func(first, item)
+        if first == 0:
+            if ind + 1 == range:
+                return ind + 1
+            else:
+                try:
+                    itemnext = seq[1:][ind + 1]
+                    if itemnext == 0:
+                        ind += 1
+                        continue
+                except Exception as e:
+                    print(str(e))
+                    return np.nan
         ind += 1
     return np.nan
 
@@ -57,7 +91,7 @@ def flagDipToplam(data, step):
     colName = '{}_range_F'.format(step)
     data[colName] = np.nan
     i = 0
-    while i < len(data):
+    while i + step + 1 < len(data):
         a = my_reduce_w_range(doDiminish, data.loc[i:i + step + 1, 'colDipToplam'].values, step)
         if not (math.isnan(a)):
             data.at[i, [colName]] = a
@@ -67,36 +101,12 @@ def flagDipToplam(data, step):
     return data
 
 
-def runSubTotal(data, maxstep):
-    # coldiptoplam converting into float
-    data['colDipToplam'] = data['colDipToplam'].astype(str).str.replace('.', '').astype(float)
-    datav2 = data.copy()
-    for i in range(1, maxstep):
-        print(i)
-        datav2 = flagDipToplam(data=datav2, step=i)
-        print(i, 'sona erdi')
-
-    return datav2
-
-
 def runSubTotalUnique(data, step):
     # sadece 1 tane step icin yapilacak subtotal.
     # coldiptoplam converting into float
-    data['colDipToplam'] = data['colDipToplam'].astype(str).str.replace('.', '').astype(float)
     datav2 = data.copy()
-    datav2 = flagDipToplam(data=datav2, step=step - 1)
-
+    datav2 = flagDipToplam(data=datav2, step=step)
     return datav2
-
-
-def findZeroRows(data):
-    dropRows = []
-    for i, r in data.iterrows():
-        if r['colDipToplam'] == 0:
-            dropRows.append(i)
-        if math.isnan(r['colDipToplam']):
-            dropRows.append(i)
-    return dropRows
 
 
 def findMaxSubCount(data, maxStep):
@@ -106,6 +116,10 @@ def findMaxSubCount(data, maxStep):
         a = sum([not bool(math.isnan(b)) for b in x])
         if a > 0:
             return j
+        else:
+            # return None
+            if j % 5 == 0:
+                print(j, '.step')
 
 
 def addRemoveDataFrame(data):
@@ -117,7 +131,7 @@ def addRemoveDataFrame(data):
             continue
         else:
             intcolend = int(r[colend])
-            d = data.loc[i + 1:i + 1 + intcolend, :]
+            d = data.loc[i + 1:i + intcolend, :]
             d['SubCode'] = str(r['tableindex']) + '.'
             dfList.append(d)
             l = list(range(i + 1, i + 1 + intcolend))
@@ -126,16 +140,11 @@ def addRemoveDataFrame(data):
     return dfList, dropIndices
 
 
-def getMaxSubCount(data):
-    maxSubCount = findMaxSubCount(data=data, maxStep=10)
-    return maxSubCount
-
-
 def runPart1(data):
     maxSubCount = findMaxSubCount(data=data, maxStep=15)
     # 3 maxsubcount demektirki 3 tane alt item toplami uste esit olan item mevcut.
     print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
-    if maxSubCount > 0:
+    if maxSubCount:
         df = data
         df = runSubTotalUnique(data=df, step=maxSubCount)
         # print('runSubTotalUnique sona erdi')
@@ -148,11 +157,29 @@ def runPart1(data):
     else:
         print('Process is completed')
 
-def join2col(x):
-    if type(x['SubCode']) == str:
-        return int(x['SubCode'][:-1])
+
+def runPart2(data):
+    maxSubCount = findMaxSubCount(data=data, maxStep=15)
+    print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
+    if maxSubCount:
+        # maxSubCount_flag column is added
+        data_w_flag = runSubTotalUnique(data=data, step=maxSubCount)
+        #dip toplami olan indexler
+        indices = list(data_w_flag.index[data_w_flag[data_w_flag.columns[-1]].notnull()])
+        dicLookup = {}
+        for i in indices:
+            val = data.loc[i, 'tableindex']
+            keys = data.loc[i + 1:i + 10, 'tableIndexSubCodeJoin']
+            dic = {key: val for key in keys}
+            dicLookup.update(dic)
+
+        data_w_flag_ = data_w_flag.iloc[:, :].drop(indices)
+        data_wo_flag = data_w_flag.iloc[:, :-1].drop(indices)
+        data_wo_flag.index = range(0, len(data_wo_flag))
+        return dicLookup, data_wo_flag, data_w_flag_, indices
     else:
-        return x['tableindex']
+        print('Process is completed')
+
 
 def getReadyPart1(data):
     data.index = range(0, len(data))
@@ -166,11 +193,11 @@ def getReadyPart1(data):
 def Part1(data):
     certainValue = 1
     mainDfList = []
-    lastdfOp = data
+    lastdfOps = [data]
     while certainValue < 100:
         try:
             data, dfList = runPart1(data=data)
-            lastdfOp = data
+            lastdfOps.append(data)
             mainDfList += dfList
         except Exception as e:
             print(str(e))
@@ -179,38 +206,13 @@ def Part1(data):
         certainValue += 1
 
     Dfs = pd.concat(mainDfList)
-    DatafN = pd.concat([Dfs, lastdfOp])
+    DatafN = pd.concat([Dfs, lastdfOps[-1]])
     DatafN = DatafN.dropna(how='all', axis='columns')
 
     DatafN = DatafN.sort_values(by=['tableindex'])
     DatafN.index = range(0, len(DatafN))
 
-    return DatafN
-
-
-
-def runPart2(data):
-    maxSubCount = findMaxSubCount(data=data, maxStep=15)
-    print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
-
-    if maxSubCount:
-        # maxSubCount_flag column is added
-        data_w_flag = runSubTotalUnique(data=data, step=maxSubCount)
-        indices = list(data_w_flag.index[data_w_flag[data_w_flag.columns[-1]].notnull()])
-        dicLookup = {}
-        for i in indices:
-            val = data.loc[i, 'tableindex']
-            keys = data.loc[i + 1:i + 10, 'tableIndexSubCodeJoin']
-            dic = {key: val for key in keys}
-            dicLookup.update(dic)
-
-        data_wo_flag = data_w_flag.iloc[:, :-1].drop(indices)
-        data_wo_flag.index = range(0, len(data_wo_flag))
-        return dicLookup, data_wo_flag
-    else:
-        print('Process is completed')
-
-
+    return DatafN, mainDfList, lastdfOps
 
 
 def getReadyPart2(data):
@@ -233,9 +235,13 @@ def part2(data):
     main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
     resultLookups = {}
     certainValue = 1
+    part2Dfs = []
+    dropIndices = []
     while certainValue < 100:
         try:
-            dicLookup, data_new = runPart2(data=data)
+            dicLookup, data_new, part2Df, Indice = runPart2(data=data)
+            dropIndices.append(dropIndices)
+            part2Dfs.append(part2Df)
             if len(data_new.columns) != len(data.columns):
                 print(certainValue, ' icin column sayisinda artis olustu.: ', data_new.columns)
             data = data_new
@@ -245,4 +251,4 @@ def part2(data):
             break
         print('tur: ', certainValue)
         certainValue += 1
-    return resultLookups
+    return resultLookups, part2Dfs, dropIndices
