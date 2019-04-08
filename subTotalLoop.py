@@ -240,7 +240,8 @@ def part2(data):
     while certainValue < 100:
         try:
             dicLookup, data_new, part2Df, Indice = runPart2(data=data)
-            dropIndices.append(dropIndices)
+            print('dicLookup: ', dicLookup)
+            dropIndices.append(Indice)
             part2Dfs.append(part2Df)
             if len(data_new.columns) != len(data.columns):
                 print(certainValue, ' icin column sayisinda artis olustu.: ', data_new.columns)
@@ -249,6 +250,7 @@ def part2(data):
         except Exception as e:
             print(str(e))
             break
-        print('tur: ', certainValue)
+        if certainValue % 25:
+            print('tur: ', certainValue)
         certainValue += 1
     return resultLookups, part2Dfs, dropIndices
