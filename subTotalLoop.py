@@ -158,27 +158,6 @@ def runPart1(data):
         print('Process is completed')
 
 
-def runPart2(data):
-    maxSubCount = findMaxSubCount(data=data, maxStep=15)
-    print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
-    if maxSubCount:
-        # maxSubCount_flag column is added
-        data_w_flag = runSubTotalUnique(data=data, step=maxSubCount)
-        #dip toplami olan indexler
-        indices = list(data_w_flag.index[data_w_flag[data_w_flag.columns[-1]].notnull()])
-        dicLookup = {}
-        for i in indices:
-            val = data.loc[i, 'tableindex']
-            keys = data.loc[i + 1:i + 10, 'tableIndexSubCodeJoin']
-            dic = {key: val for key in keys}
-            dicLookup.update(dic)
-
-        data_w_flag_ = data_w_flag.iloc[:, :].drop(indices)
-        data_wo_flag = data_w_flag.iloc[:, :-1].drop(indices)
-        data_wo_flag.index = range(0, len(data_wo_flag))
-        return dicLookup, data_wo_flag, data_w_flag_, indices
-    else:
-        print('Process is completed')
 
 
 def getReadyPart1(data):
@@ -214,16 +193,38 @@ def Part1(data):
 
     return DatafN, mainDfList, lastdfOps
 
+def runPart2(data):
+    maxSubCount = findMaxSubCount(data=data, maxStep=15)
+    # print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
+    if maxSubCount:
+        # maxSubCount_flag column is added
+        data_w_flag = runSubTotalUnique(data=data, step=maxSubCount)
+        # dip toplami olan indexler
+        indices = list(data_w_flag.index[data_w_flag[data_w_flag.columns[-1]].notnull()])
+        indicesx = list(data_w_flag.tableindex[data_w_flag[data_w_flag.columns[-1]].notnull()])
+        dicLookup = {}
+        for i in indices:
+            val = data.loc[i, 'tableindex']
+            # 238
+            keys = data.loc[i + 1:i + maxSubCount, 'tableIndexSubCodeJoin']
+            dic = {key: val for key in keys}
+            dicLookup.update(dic)
+
+        data_w_flag_ = data_w_flag.iloc[:, :].drop(indices)
+        data_wo_flag = data_w_flag.iloc[:, :-1].drop(indices)
+        data_wo_flag.index = range(0, len(data_wo_flag))
+        return dicLookup, data_wo_flag, data_w_flag_, indices
+    else:
+        print('Process is completed')
+
 
 def getReadyPart2(data):
     # alt kalemleri bulunmus olanlarin table indexleri listesi
     foundKalems = set([int(i[:-1]) for i in data['SubCode'].values if type(i) == str])
     data1 = data.copy()
-
     '''bu partta yaptigim calismada alt kalemlerini bulamadiklarimizi her defasinda dataframeden cikaracagim.Bunu bir
     onceki parttaki calismada yapmadim.Cunku bu bulunamayan kalemleri tekrardan bulmak icin yaptigim bir calisma.'''
     data1 = data1.loc[~data1['tableindex'].isin(foundKalems)]
-
     data1['tableIndexSubCodeJoin'] = data1.apply(join2col, axis=1)
     data1 = data1.sort_values(by=['tableindex'])
     data1.index = range(0, len(data1))
