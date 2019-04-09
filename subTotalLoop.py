@@ -109,19 +109,6 @@ def runSubTotalUnique(data, step):
     return datav2
 
 
-def findMaxSubCount(data, maxStep):
-    for j in range(maxStep, 0, -1):
-        data_v = runSubTotalUnique(data=data, step=j)
-        x = data_v.iloc[:, -1]
-        a = sum([not bool(math.isnan(b)) for b in x])
-        if a > 0:
-            return j
-        else:
-            # return None
-            if j % 5 == 0:
-                print(j, '.step')
-
-
 def addRemoveDataFrame(data):
     dfList = []
     dropIndices = []
@@ -141,12 +128,15 @@ def addRemoveDataFrame(data):
 
 
 def runPart1(data):
-    maxSubCount = findMaxSubCount(data=data, maxStep=15)
+    maxSubCount = findComponent(data=data, maxStep=15)
     # 3 maxsubcount demektirki 3 tane alt item toplami uste esit olan item mevcut.
-    print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
+    # print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
     if maxSubCount:
         df = data
-        df = runSubTotalUnique(data=df, step=maxSubCount)
+        try:
+            df = runSubTotalUnique(data=df, step=maxSubCount)
+        except Exception as e:
+            print('runSubTotalUnique: ', str(e))
         # print('runSubTotalUnique sona erdi')
         dfList, dropIndices = addRemoveDataFrame(data=df)
         # print('addRemoveDataFrame sona erdi')
@@ -154,10 +144,8 @@ def runPart1(data):
         df.index = range(0, len(df))
         df = df.iloc[:, :-1]
         return df, dfList
-    else:
-        print('Process is completed')
-
-
+    # else:
+    #     print('Process is completed')
 
 
 def getReadyPart1(data):
@@ -174,14 +162,16 @@ def Part1(data):
     mainDfList = []
     lastdfOps = [data]
     while certainValue < 100:
+        if certainValue % 25:
+            print('tur: ', certainValue)
         try:
             data, dfList = runPart1(data=data)
             lastdfOps.append(data)
             mainDfList += dfList
+            print(len(mainDfList))
         except Exception as e:
-            print(str(e))
+            print(str(e), 'lenmaindfList: ', len(mainDfList))
             break
-        print('tur: ', certainValue)
         certainValue += 1
 
     Dfs = pd.concat(mainDfList)
@@ -193,8 +183,9 @@ def Part1(data):
 
     return DatafN, mainDfList, lastdfOps
 
+
 def runPart2(data):
-    maxSubCount = findMaxSubCount(data=data, maxStep=15)
+    maxSubCount = findComponent(data=data, maxStep=15)
     # print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
     if maxSubCount:
         # maxSubCount_flag column is added
@@ -212,7 +203,9 @@ def runPart2(data):
 
         data_w_flag_ = data_w_flag.iloc[:, :].drop(indices)
         data_wo_flag = data_w_flag.iloc[:, :-1].drop(indices)
+
         data_wo_flag.index = range(0, len(data_wo_flag))
+        data_w_flag_.index = range(0, len(data_w_flag_))
         return dicLookup, data_wo_flag, data_w_flag_, indices
     else:
         print('Process is completed')
@@ -246,6 +239,10 @@ def part2(data):
             part2Dfs.append(part2Df)
             if len(data_new.columns) != len(data.columns):
                 print(certainValue, ' icin column sayisinda artis olustu.: ', data_new.columns)
+
+            for k, v in dicLookup.items():
+                data_new.loc[data_new['tableindex'] == k, 'SubCode'] = '{}.'.format(v)
+                data_new.loc[data_new['tableindex'] == k, 'tableIndexSubCodeJoin'] = v
             data = data_new
             resultLookups.update(dicLookup)
         except Exception as e:
@@ -254,4 +251,45 @@ def part2(data):
         if certainValue % 25:
             print('tur: ', certainValue)
         certainValue += 1
+    return resultLookups, part2Dfs, dropIndices
+
+
+def findComponent(data, maxStep):
+    for j in range(maxStep, 0, -1):
+        data_v = runSubTotalUnique(data=data, step=j)
+        x = data_v.iloc[:, -1]
+        a = sum([not bool(math.isnan(b)) for b in x])
+        if a > 0:
+            return j
+
+
+def findComponent(data):
+    maxSubCount = findComponent(data=data, maxStep=15)
+
+    dicLookup, data_new, part2Df, Indice = runPart2(data=data)
+    if len(data_new.columns) != len(data.columns):
+        print(' icin column sayisinda artis olustu.: ', data_new.columns)
+    for k, v in dicLookup.items():
+        data_new.loc[data_new['tableindex'] == k, 'SubCode'] = '{}.'.format(v)
+        data_new.loc[data_new['tableindex'] == k, 'tableIndexSubCodeJoin'] = v
+
+    return data_new, part2Df, dicLookup, Indice
+
+
+def fillItemsOfComponent(data):
+    """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
+    main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
+    resultLookups = {}
+    certainValue = 1
+    part2Dfs = []
+    dropIndices = []
+    try:
+        data = getReadyPart2(data=data)
+        data_new, part2Df, dicLookup, Indice = findComponent(data=data)
+        dropIndices.append(Indice)
+        part2Dfs.append(part2Df)
+        resultLookups.update(dicLookup)
+
+    except Exception as e:
+        print(str(e))
     return resultLookups, part2Dfs, dropIndices
