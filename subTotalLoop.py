@@ -283,6 +283,18 @@ def fillItemsOfComponent(data):
     except Exception as e:
         print(str(e))
     return resultLookups, part2Dfs, dropIndices
+
+def FindOneItemComponentandItems(data):
+    # 1 kalem olan component
+    s = data['SubCode'].value_counts()
+    s = s[s == 1].index
+    di = {}
+    for item in s:
+        val = data.loc[data['SubCode'] == item, 'tableindex'].values
+        di.update({val[0]: int(item[:-1])})
+    return di
+
+
 def getReadyPart2(data):
     # alt kalemleri bulunmus olanlarin table indexleri listesi
     foundKalems = set([int(i[:-1]) for i in data['SubCode'].values if type(i) == str])
