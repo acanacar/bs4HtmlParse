@@ -2,6 +2,8 @@ import numpy as np
 import math
 import pandas as pd
 
+#'runpart2 part2 ve part words are removed and with aim of
+# increasing code efficieny by decreasing lines are done by remove or rebulti to old functions'
 
 def join2col(x):
     if type(x['SubCode']) == str:
@@ -275,7 +277,6 @@ def findComponent(data):
 
     return data_new, part2Df, dicLookup, Indice
 
-
 def fillItemsOfComponent(data):
     """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
     main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
@@ -293,3 +294,16 @@ def fillItemsOfComponent(data):
     except Exception as e:
         print(str(e))
     return resultLookups, part2Dfs, dropIndices
+
+def checkResultLookup(data, lookup):
+    newLookup = lookup.copy()
+    for k, v in lookup.items():
+        subCode = data.loc[data['tableindex'] == k, 'SubCode'].values[0]
+        if type(subCode) == str:
+            newKey = int(subCode[:-1])
+            if newKey in newLookup:
+                del newLookup[k]
+            else:
+                del newLookup[k]
+                newLookup.update({newKey: v})
+    return newLookup
