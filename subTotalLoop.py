@@ -238,47 +238,8 @@ def part2(data):
     return resultLookups, part2Dfs, dropIndices
 
 
-def findComponent(data, maxStep):
-    for j in range(maxStep, 0, -1):
-        data_v = runSubTotalUnique(data=data, step=j)
-        x = data_v.iloc[:, -1]
-        a = sum([not bool(math.isnan(b)) for b in x])
-        if a > 0:
-            return j
 
-
-def findComponent(data):
-    maxSubCount = findComponent(data=data, maxStep=15)
-
-    dicLookup, data_new, part2Df, Indice = runPart2(data=data)
-    if len(data_new.columns) != len(data.columns):
-        print(' icin column sayisinda artis olustu.: ', data_new.columns)
-    for k, v in dicLookup.items():
-        data_new.loc[data_new['tableindex'] == k, 'SubCode'] = '{}.'.format(v)
-        data_new.loc[data_new['tableindex'] == k, 'tableIndexSubCodeJoin'] = v
-
-    return data_new, part2Df, dicLookup, Indice
-
-
-def fillItemsOfComponent(data):
-    """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
-    main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
-    resultLookups = {}
-    certainValue = 1
-    part2Dfs = []
-    dropIndices = []
-    try:
-        data = getReadyPart2(data=data)
-        data_new, part2Df, dicLookup, Indice = findComponent(data=data)
-        dropIndices.append(Indice)
-        part2Dfs.append(part2Df)
-        resultLookups.update(dicLookup)
-
-    except Exception as e:
-        print(str(e))
-    return resultLookups, part2Dfs, dropIndices
-
-def fillItemsOfComponent_2(data, lookup):
+def fillItemsOfComponent(data, lookup):
     for k, v in lookup.items():
         data.loc[data['tableindex'] == k, 'SubCode'] = '{}.'.format(v)
     return data
