@@ -2,14 +2,9 @@ import numpy as np
 import math
 import pandas as pd
 
-#'runpart2 part2 ve part words are removed and with aim of
-# increasing code efficieny by decreasing lines are done by remove or rebulti to old functions'
 
-def join2col(x):
-    if type(x['SubCode']) == str:
-        return int(x['SubCode'][:-1])
-    else:
-        return x['tableindex']
+# 'runpart2 part2 ve part words are removed and with aim of
+# increasing code efficieny by decreasing lines are done by remove or rebulti to old functions'
 
 
 def renameCols(data):
@@ -213,8 +208,6 @@ def runPart2(data):
         print('Process is completed')
 
 
-
-
 def part2(data):
     """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
     main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
@@ -266,6 +259,7 @@ def findComponent(data):
 
     return data_new, part2Df, dicLookup, Indice
 
+
 def fillItemsOfComponent(data):
     """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
     main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
@@ -284,6 +278,18 @@ def fillItemsOfComponent(data):
         print(str(e))
     return resultLookups, part2Dfs, dropIndices
 
+def fillItemsOfComponent_2(data, lookup):
+    for k, v in lookup.items():
+        data.loc[data['tableindex'] == k, 'SubCode'] = '{}.'.format(v)
+    return data
+
+
+def join2col(x):
+    if type(x['SubCode']) == str:
+        return int(x['SubCode'][:-1])
+    else:
+        return x['tableindex']
+
 def FindOneItemComponentandItems(data):
     # 1 kalem olan component
     s = data['SubCode'].value_counts()
@@ -293,7 +299,6 @@ def FindOneItemComponentandItems(data):
         val = data.loc[data['SubCode'] == item, 'tableindex'].values
         di.update({val[0]: int(item[:-1])})
     return di
-
 
 def getReadyPart2(data):
     # alt kalemleri bulunmus olanlarin table indexleri listesi
@@ -308,6 +313,8 @@ def getReadyPart2(data):
     data1 = data1.sort_values(by=['tableindex'])
     data1.index = range(0, len(data1))
     return data1
+
+
 def checkResultLookup(data, lookup):
     newLookup = lookup.copy()
     for k, v in lookup.items():
