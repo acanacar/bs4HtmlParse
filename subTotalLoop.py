@@ -146,8 +146,7 @@ def addRemoveDataFrame(data):
 
 def runPart1(data):
     maxSubCount = checkComponentAndGetItsStep(data=data, maxStep=20)
-    # 3 maxsubcount demektirki 3 tane alt item toplami uste esit olan item mevcut.
-    # print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
+    # For instance if maxsubcount==3 means that there is component summed of 3 subitems.
     if maxSubCount:
         df = data
         try:
@@ -252,7 +251,7 @@ def fillItemsOfComponent(data, lookup):
 
 
 def FindOneItemComponentandItems(data):
-    # 1 kalem olan component
+    # component consisted of only one item
     s = data['SubCode'].value_counts()
     s = s[s == 1].index
     di = {}
@@ -316,7 +315,7 @@ def running2(data):
 
 def running3(data, SubCode2):
     DfN3 = data.iloc[::-1]
-    # buraya bi control yapilabilir
+    # some controls might be added
     DfN3 = DfN3[DfN3['SubCode'].apply(lambda x: type(x) != str)]
     DfN3.index = range(0, len(DfN3))
     try:
