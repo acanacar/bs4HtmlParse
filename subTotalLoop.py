@@ -3,8 +3,34 @@ import math
 import pandas as pd
 
 
-# 'runpart2 part2 ve part words are removed and with aim of
-# increasing code efficieny by decreasing lines are done by remove or rebulti to old functions'
+# def part2(data):
+#     """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
+#     main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
+#     resultLookups = {}
+#     certainValue = 1
+#     part2Dfs = []
+#     dropIndices = []
+#     while certainValue < 100:
+#         try:
+#             dicLookup, data_new, part2Df, Indice = runPart2(data=data)
+#             print('dicLookup: ', dicLookup)
+#             dropIndices.append(Indice)
+#             part2Dfs.append(part2Df)
+#             if len(data_new.columns) != len(data.columns):
+#                 print(certainValue, ' icin column sayisinda artis olustu.: ', data_new.columns)
+#
+#             for k, v in dicLookup.items():
+#                 data_new.loc[data_new['tableindex'] == k, 'SubCode'] = '{}.'.format(v)
+#                 data_new.loc[data_new['tableindex'] == k, 'tableIndexSubCodeJoin'] = v
+#             data = data_new
+#             resultLookups.update(dicLookup)
+#         except Exception as e:
+#             print(str(e))
+#             break
+#         if certainValue % 25:
+#             print('tur: ', certainValue)
+#         certainValue += 1
+#     return resultLookups, part2Dfs, dropIndices
 
 
 def renameCols(data):
@@ -84,7 +110,9 @@ def my_reduce_w_range(func, seq, range):
     return np.nan
 
 
-def flagDipToplam(data, step):
+def SubTotalForUniqueStep(data, step):
+    # sadece 1 tane step icin yapilacak subtotal.
+    # coldiptoplam converting into float
     colName = '{}_range_F'.format(step)
     data[colName] = np.nan
     i = 0
@@ -96,14 +124,6 @@ def flagDipToplam(data, step):
         if i % 1000 == 0:
             print(i)
     return data
-
-
-def runSubTotalUnique(data, step):
-    # sadece 1 tane step icin yapilacak subtotal.
-    # coldiptoplam converting into float
-    datav2 = data.copy()
-    datav2 = flagDipToplam(data=datav2, step=step)
-    return datav2
 
 
 def addRemoveDataFrame(data):
@@ -125,16 +145,16 @@ def addRemoveDataFrame(data):
 
 
 def runPart1(data):
-    maxSubCount = findComponent(data=data, maxStep=15)
+    maxSubCount = checkComponentAndGetItsStep(data=data, maxStep=20)
     # 3 maxsubcount demektirki 3 tane alt item toplami uste esit olan item mevcut.
     # print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
     if maxSubCount:
         df = data
         try:
-            df = runSubTotalUnique(data=df, step=maxSubCount)
+            df = SubTotalForUniqueStep(data=df, step=maxSubCount)
         except Exception as e:
-            print('runSubTotalUnique: ', str(e))
-        # print('runSubTotalUnique sona erdi')
+            print('SubTotalForUniqueStep: ', str(e))
+        # print('SubTotalForUniqueStep sona erdi')
         dfList, dropIndices = addRemoveDataFrame(data=df)
         # print('addRemoveDataFrame sona erdi')
         df = df.drop(dropIndices)
@@ -154,6 +174,22 @@ def getReadyPart1(data):
     return data
 
 
+def merge3col(x):
+    S1 = 'SubCode1'
+    S2 = 'SubCode2'
+    S3 = 'SubCode3'
+    try:
+        if type(x[S1]) == str:
+            return x[S1]
+        elif type(x[S2]) == str:
+            return x[S2]
+        else:
+            print(x[S3])
+            return x[S3]
+    except Exception as e:
+        print(str(e), 'hata raised location row -> ', x)
+
+
 def Part1(data):
     certainValue = 1
     mainDfList = []
@@ -165,9 +201,8 @@ def Part1(data):
             data, dfList = runPart1(data=data)
             lastdfOps.append(data)
             mainDfList += dfList
-            print(len(mainDfList))
         except Exception as e:
-            print(str(e), 'lenmaindfList: ', len(mainDfList))
+            print('Part1=>', str(e))
             break
         certainValue += 1
 
@@ -181,62 +216,33 @@ def Part1(data):
     return DatafN, mainDfList, lastdfOps
 
 
-def runPart2(data):
-    maxSubCount = findComponent(data=data, maxStep=15)
-    # print('maxSubCount sona erdi. maxSubCount: ', maxSubCount)
+def checkComponentAndGetItsStep(data, maxStep):
+    for j in range(maxStep, 0, -1):
+        data_v = SubTotalForUniqueStep(data=data, step=j)
+        x = data_v.iloc[:, -1]
+        a = sum([not bool(math.isnan(b)) for b in x])
+        if a > 0:
+            return j
+
+
+def findComponentPart(data):
+    maxSubCount = checkComponentAndGetItsStep(data=data, maxStep=15)
+    dicLookup = {}
+
     if maxSubCount:
-        # maxSubCount_flag column is added
-        data_w_flag = runSubTotalUnique(data=data, step=maxSubCount)
-        # dip toplami olan indexler
-        indices = list(data_w_flag.index[data_w_flag[data_w_flag.columns[-1]].notnull()])
-        indicesx = list(data_w_flag.tableindex[data_w_flag[data_w_flag.columns[-1]].notnull()])
-        dicLookup = {}
+        df = data
+        # flag is added
+        df = SubTotalForUniqueStep(data=df, step=maxSubCount)
+        # WillComponentCreate indices
+        indices = list(df.index[df[df.columns[-1]].notnull()])
+        tableindices = list(df.tableindex[df[df.columns[-1]].notnull()])
         for i in indices:
             val = data.loc[i, 'tableindex']
-            # 238
             keys = data.loc[i + 1:i + maxSubCount, 'tableIndexSubCodeJoin']
             dic = {key: val for key in keys}
             dicLookup.update(dic)
 
-        data_w_flag_ = data_w_flag.iloc[:, :].drop(indices)
-        data_wo_flag = data_w_flag.iloc[:, :-1].drop(indices)
-
-        data_wo_flag.index = range(0, len(data_wo_flag))
-        data_w_flag_.index = range(0, len(data_w_flag_))
-        return dicLookup, data_wo_flag, data_w_flag_, indices
-    else:
-        print('Process is completed')
-
-
-def part2(data):
-    """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
-    main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
-    resultLookups = {}
-    certainValue = 1
-    part2Dfs = []
-    dropIndices = []
-    while certainValue < 100:
-        try:
-            dicLookup, data_new, part2Df, Indice = runPart2(data=data)
-            print('dicLookup: ', dicLookup)
-            dropIndices.append(Indice)
-            part2Dfs.append(part2Df)
-            if len(data_new.columns) != len(data.columns):
-                print(certainValue, ' icin column sayisinda artis olustu.: ', data_new.columns)
-
-            for k, v in dicLookup.items():
-                data_new.loc[data_new['tableindex'] == k, 'SubCode'] = '{}.'.format(v)
-                data_new.loc[data_new['tableindex'] == k, 'tableIndexSubCodeJoin'] = v
-            data = data_new
-            resultLookups.update(dicLookup)
-        except Exception as e:
-            print(str(e))
-            break
-        if certainValue % 25:
-            print('tur: ', certainValue)
-        certainValue += 1
-    return resultLookups, part2Dfs, dropIndices
-
+    return dicLookup
 
 
 def fillItemsOfComponent(data, lookup):
@@ -244,12 +250,6 @@ def fillItemsOfComponent(data, lookup):
         data.loc[data['tableindex'] == k, 'SubCode'] = '{}.'.format(v)
     return data
 
-
-def join2col(x):
-    if type(x['SubCode']) == str:
-        return int(x['SubCode'][:-1])
-    else:
-        return x['tableindex']
 
 def FindOneItemComponentandItems(data):
     # 1 kalem olan component
@@ -260,6 +260,14 @@ def FindOneItemComponentandItems(data):
         val = data.loc[data['SubCode'] == item, 'tableindex'].values
         di.update({val[0]: int(item[:-1])})
     return di
+
+
+def join2col(x):
+    if type(x['SubCode']) == str:
+        return int(x['SubCode'][:-1])
+    else:
+        return x['tableindex']
+
 
 def getReadyPart2(data):
     # alt kalemleri bulunmus olanlarin table indexleri listesi
@@ -288,3 +296,52 @@ def checkResultLookup(data, lookup):
                 del newLookup[k]
                 newLookup.update({newKey: v})
     return newLookup
+
+
+def running2(data):
+    """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
+    main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
+    changed = 0
+    try:
+        dataReady = getReadyPart2(data=data)
+        resultLookup = findComponentPart(data=dataReady)
+        checkedResultLookup = checkResultLookup(data=data, lookup=resultLookup)
+        data = fillItemsOfComponent(data=data, lookup=checkedResultLookup)
+        if bool(checkedResultLookup):
+            changed = 1
+    except Exception as e:
+        print('running2 =>', str(e))
+    return data, bool(changed)
+
+
+def running3(data, SubCode2):
+    DfN3 = data.iloc[::-1]
+    # buraya bi control yapilabilir
+    DfN3 = DfN3[DfN3['SubCode'].apply(lambda x: type(x) != str)]
+    DfN3.index = range(0, len(DfN3))
+    try:
+        Dff, DfNlist, lastdfOps = Part1(data=DfN3)
+        part3lookup = {k[0]: k[1] for k in Dff[['tableindex', 'SubCode']].values if type(k[1]) == str}
+        if part3lookup:
+            for k, v in part3lookup.items():
+                checkDuplicateCode = data.loc[data['SubCode'] == v, 'tableindex'].values
+                item = [i for i in checkDuplicateCode if i not in list(part3lookup.keys())]
+                if len(checkDuplicateCode) > 0:
+                    if len(checkDuplicateCode) == 1:
+                        item = [i for i in checkDuplicateCode if i not in list(part3lookup.keys())]
+                        if len(item) > 0:
+                            v = '{}.'.format(checkDuplicateCode[0])
+
+                sCode = data.loc[data['tableindex'] == k, 'SubCode'].values[0]
+                if not type(sCode) == str:
+                    data.loc[data['tableindex'] == k, 'SubCode'] = v
+                    print('Degistirilen table index : {} with value of : {}'.format(k, v))
+
+        SubCode3 = data[['tableindex', 'SubCode']]
+    except Exception as e:
+        print(str(e), 'Part1 error is raised1')
+        SubCode3 = SubCode2
+        SubCode3['SubCode'] = float('nan')
+
+
+    return DfN3, SubCode3
