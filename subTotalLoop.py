@@ -3,36 +3,6 @@ import math
 import pandas as pd
 
 
-# def part2(data):
-#     """ilk partta bulamadigimiz subcodelari bulmaya yarar.Burdan elde edilen resultLookup ile
-#     main DataFrameimiz olan DfN dataframei SubCode columni guncellenir."""
-#     resultLookups = {}
-#     certainValue = 1
-#     part2Dfs = []
-#     dropIndices = []
-#     while certainValue < 100:
-#         try:
-#             dicLookup, data_new, part2Df, Indice = runPart2(data=data)
-#             print('dicLookup: ', dicLookup)
-#             dropIndices.append(Indice)
-#             part2Dfs.append(part2Df)
-#             if len(data_new.columns) != len(data.columns):
-#                 print(certainValue, ' icin column sayisinda artis olustu.: ', data_new.columns)
-#
-#             for k, v in dicLookup.items():
-#                 data_new.loc[data_new['tableindex'] == k, 'SubCode'] = '{}.'.format(v)
-#                 data_new.loc[data_new['tableindex'] == k, 'tableIndexSubCodeJoin'] = v
-#             data = data_new
-#             resultLookups.update(dicLookup)
-#         except Exception as e:
-#             print(str(e))
-#             break
-#         if certainValue % 25:
-#             print('tur: ', certainValue)
-#         certainValue += 1
-#     return resultLookups, part2Dfs, dropIndices
-
-
 def renameCols(data):
     lokkup = {'03': '1', '06': '2', '09': '3', '12': '4'}
     newCols = []
