@@ -1,5 +1,7 @@
 BilancoParse
+Bilanco-zip
 outputs/*
-.idea
+.idea/*
 trash/*
 venv
+outputs2
