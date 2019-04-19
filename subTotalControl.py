@@ -1,13 +1,6 @@
 import pandas as pd
 from BilancoParse.constants import *
 
-stocks = Bist30Stocks
-periods = [
-    '2016_1', '2016_2', '2016_3', '2016_4',
-    '2017_1', '2017_2', '2017_3', '2017_4',
-    '2018_1', '2018_2', '2018_3', '2018_4'
-]
-
 
 def getMistakes(data):
     SubCodeUnique = set(data['LastSubCode'].values)
@@ -28,20 +21,32 @@ def getMistakes(data):
     return mistakeSubCodes
 
 
+def getPeriods(years):
+    periods = []
+    for y in years:
+        for quarter in range(1, 5):
+            periods.append('{}_{}'.format(y, quarter))
+    return periods
+
+
+def getTotalMistakes(stocks, periods):
+    d = []
+    for stock in stocks:
+        for period in periods:
+            try:
+                path = '/home/cem/Desktop/diptoplamChecks/pickles/{}_{}_PartB.pkl'.format(stock, period)
+                df = pd.read_pickle(path)
+            except Exception as e:
+                print('{} {} bulunamadi.'.format(stock, period))
+                continue
+            mistakeSubCodes = getMistakes(data=df)
+            if len(mistakeSubCodes) > 0:
+                d.append({'period': period, 'stock': stock, 'mistakes': mistakeSubCodes})
+                print('{} yanlis calculation bulundu', stock)
+    return d
+
+
 years = [2016, 2017, 2018]
-
-for year in years:
-
-d = []
-for stock in stocks:
-    for period in periods:
-        try:
-            path = '/home/cem/Desktop/diptoplamChecks/pickles/{}_{}_PartB.pkl'.format(stock, period)
-            df = pd.read_pickle(path)
-        except Exception as e:
-            print('{} {} bulunamadi.'.format(stock, period))
-            continue
-        mistakeSubCodes = getMistakes(data=df)
-        if len(mistakeSubCodes) > 0:
-            d.append({'period': period, 'stock': stock, 'mistakes': mistakeSubCodes})
-            print('{} yanlis calculation bulundu', stock)
+periods = getPeriods(years=years)
+stocks = Bist30Stocks
+totalMistakes = getTotalMistakes(stocks=stocks, periods=periods)
