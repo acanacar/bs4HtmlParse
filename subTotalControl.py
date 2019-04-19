@@ -45,6 +45,7 @@ def getTotalMistakes(stocks, periods):
                 print('{} yanlis calculation bulundu', stock)
     return d
 
+
 def getSP(years):
     d = {'{}_{}'.format(y, d): [] for y in years for d in [1, 2, 3, 4]}
     for year in years:
@@ -55,6 +56,16 @@ def getSP(years):
         for p, s in pSlist:
             d[p].append(s)
     return d
+
+
+def getNullSP(years, Bist30Stocks=Bist30Stocks):
+    sP = getSP(years=years)
+
+    n = {}
+    for p, sList in sP.items():
+        nullStocks = [s for s in Bist30Stocks if s not in sList]
+        n[p] = nullStocks
+    return n
 
 
 years = [2016, 2017, 2018]
