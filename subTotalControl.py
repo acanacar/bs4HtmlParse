@@ -45,6 +45,17 @@ def getTotalMistakes(stocks, periods):
                 print('{} yanlis calculation bulundu', stock)
     return d
 
+def getSP(years):
+    d = {'{}_{}'.format(y, d): [] for y in years for d in [1, 2, 3, 4]}
+    for year in years:
+        data = pd.read_pickle('/home/cem/PycharmProjects/htmlParseInf/outputs/t/B2/{}_1234_B_k.pkl'.format(year))
+        data['periodStock'] = data['period'] + ";" + data['stock']
+        stocksperiods = data['periodStock'].unique()
+        pSlist = list(map(lambda x: x.split(';'), stocksperiods))
+        for p, s in pSlist:
+            d[p].append(s)
+    return d
+
 
 years = [2016, 2017, 2018]
 periods = getPeriods(years=years)
