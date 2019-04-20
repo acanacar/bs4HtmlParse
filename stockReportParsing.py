@@ -236,6 +236,11 @@ def getKonsolideFlagForOld(html):
             lambda tag: tag.name == 'table' and 'tablob' in tag['class'] if tag.has_attr('class') else False)
         konsolideText = wholeTables[0].find_all('tr')[1].find_all('td')[-1].text
     return konsolideText
+def getKonsolideFlag(html):
+    if html:
+        wholeTables = html.find_all(lambda tag: tag.name == 'table' and 'financial-header-table' in tag['class'])
+        konsolideText = wholeTables[0].find_all('td')[-1].text
+    return konsolideText
 
 
 def fromTexttoName(dataText):
