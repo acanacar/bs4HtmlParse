@@ -1,7 +1,7 @@
-from v2 import *
 import pandas as pd
 import numpy as np
 import math
+import re
 
 def doDiminish(x1, x2): return x1 - x2
 
@@ -230,102 +230,35 @@ def getDataFrameGelir(table):
 
         return df
 
+def getKonsolideFlagForOld(html):
+    if html:
+        wholeTables = html.find_all(
+            lambda tag: tag.name == 'table' and 'tablob' in tag['class'] if tag.has_attr('class') else False)
+        konsolideText = wholeTables[0].find_all('tr')[1].find_all('td')[-1].text
+    return konsolideText
 
-bilancos = []
-gelirs = []
-nakits = []
-k_bilancos = []
-k_gelirs = []
-k_nakits = []
 
-year = 2018
-mainDir = '/home/cem/PycharmProjects/htmlParseInf/Bilanco-zip/excels/2018/'
-stock2 = ['ASELS']
-for stock in Bist30Stocks:
-    a = time.time()
-    print(stock, ' is started')
-    readDir = mainDir + '{}_{}'.format(stock, year)
+def fromTexttoName(dataText):
+    text = dataText.replace('\n', '')
+    list = re.findall("\S+\s{0}", text)
+    result = '-'.join(list)
+    return result
 
-    if os.path.isdir(readDir):
-        for file in os.listdir(readDir):
+def getConsolidateFlag(html, old_f):
+    if old_f:
+        konsolideText = fromTexttoName(getKonsolideFlagForOld(html))
+    else:
+        konsolideText = fromTexttoName(getKonsolideFlag(html))
+    if konsolideText == 'Konsolide-Olmayan':
+        return 0
+    if konsolideText == 'Konsolide':
+        return 1
 
-            if file.endswith(".html"):
-                stock, file_no, year, donem = fileNameSplit(file)
-                filepath = os.path.join(readDir, file)
-                myhtml = BeautifulSoup(open(filepath))
-
-                if myhtml:
-                    konsolideText = getKonsolideFlag(myhtml)
-                    if fromTexttoName(konsolideText) == 'Konsolide-Olmayan':
-                        konsolide_f = 0
-                    if fromTexttoName(konsolideText) == 'Konsolide':
-                        konsolide_f = 1
-
-                    myTables = getWholeTables(myhtml)
-                    # print(year, donem, konsolide_f, '#Tables -->', len(myTables))
-                    headerAndTables = getHeaderandTable(Tables=myTables)
-
-                    for header, table in headerAndTables.items():
-                        if header in bilancoHeaders:
-                            # print(header, '--> dfbilanco')
-                            df = getDataFrameBilanco(table)
-                            df['stock'] = stock
-                            df['period'] = '{}_{}'.format(year, donem)
-                            if konsolide_f == 1:
-                                k_bilancos.append(df)
-                            if konsolide_f == 0:
-                                bilancos.append(df)
-
-                        elif header in nakitAkisiHeaders:
-                            # print(header, '--> dfnakit')
-                            df = getDataFrameNakit(table)
-                            df['stock'] = stock
-                            df['period'] = '{}_{}'.format(year, donem)
-                            if konsolide_f == 1:
-                                k_nakits.append(df)
-                            if konsolide_f == 0:
-                                nakits.append(df)
-
-                        elif header in karZararHeaders:
-                            # print(header, '--> dfgelir')
-                            df = getDataFrameGelir(table)
-                            df['stock'] = stock
-                            df['period'] = '{}_{}'.format(year, donem)
-                            if konsolide_f == 1:
-                                k_gelirs.append(df)
-                            if konsolide_f == 0:
-                                gelirs.append(df)
-
-                        else:
-                            continue
-                            # print(header, ' hesaba katilmadi')
-    b = time.time()
-    print('lasted ', b - a)
 
 
 def storeFrame2018(inputlist, outputname, outputpath):
     dataframe = pd.concat(inputlist)
     dataframe.to_pickle('{}/{}.pkl'.format(outputpath, outputname))
     dataframe.to_excel('/home/cem/Desktop/{}.xls'.format(outputname))
-
-
-storeFrame2018(inputlist=k_gelirs,
-               outputname='2018_1234_G_k',
-               outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
-storeFrame2018(inputlist=gelirs,
-               outputname='2018_1234_G', outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
-storeFrame2018(inputlist=k_nakits,
-               outputname='2018_1234_N_k',
-               outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
-storeFrame2018(inputlist=nakits,
-               outputname='2018_1234_N', outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
-storeFrame2018(inputlist=k_bilancos,
-               outputname='2018_1234_B_k',
-               outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
-storeFrame2018(inputlist=bilancos,
-               outputname='2018_1234_B', outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
-
-storeFrame2019(inputlist=bilancos,
-               outputname='2019_1234_B', outputpath='/home/cem/PycharmProjects/htmlParseInf/outputs')
 
 
