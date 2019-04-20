@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import math
 import re
+import os
+from bs4 import BeautifulSoup
 
 def doDiminish(x1, x2): return x1 - x2
 
@@ -259,6 +261,18 @@ def getConsolidateFlag(html, old_f):
     if konsolideText == 'Konsolide':
         return 1
 
+
+def getmyhtml(readDir, file):
+    filepath = os.path.join(readDir, file)
+    myhtml = BeautifulSoup(open(filepath))
+    return filepath, myhtml
+
+
+def getOldFlag(year):
+    if year < 2016:
+        return 1
+    else:
+        return 0
 
 
 def storeFrame2018(inputlist, outputname, outputpath):
