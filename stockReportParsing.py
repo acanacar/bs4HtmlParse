@@ -5,6 +5,7 @@ import re
 import os
 from bs4 import BeautifulSoup
 
+
 def doDiminish(x1, x2): return x1 - x2
 
 
@@ -21,6 +22,7 @@ def renameCols(data):
         newCols.append(newCol)
     data.columns = newCols
     return data
+
 
 def my_reduce(func, seq):
     first = seq[0]
@@ -104,6 +106,8 @@ def runSubTotal(data, maxstep):
     data['max'] = datav2.iloc[:, -(maxstep - 1):].max(axis=1)
     datav2['max'] = data['max']
     return data, datav2
+
+
 ''' 2017 PARSING !!!! '''
 
 
@@ -189,7 +193,6 @@ def getDataFrameBilanco(table):
                     cols[2] + '-YP', cols[2] + '-TP', cols[2] + '-Toplam']
         df.columns = new_cols
         df = df.dropna(axis=0, how='all')
-
         return df
     if len(cols) == 10:
         df = df.iloc[1:, [2, 6, 7, 8, 9]]
@@ -198,9 +201,24 @@ def getDataFrameBilanco(table):
                     cols[1] + '-Toplam', cols[2] + '-Toplam', cols[3] + '-Toplam']
         df.columns = new_cols
         df = df.dropna(axis=0, how='all')
+        return df
+    # οld f
+    if len(cols) == 4:
+        new_cols = ['titles',
+                    'footnotes',
+                    cols[2], cols[3]]
+        df.columns = new_cols
+        df = df.dropna(axis=0, how='all')
+        return df
+    if len(cols) == 8:
+        new_cols = ['titles',
+                    'footnotes',
+                    cols[2], cols[3], cols[4],
+                    cols[5], cols[6], cols[7]]
+        df.columns = new_cols
+        df = df.dropna(axis=0, how='all')
 
         return df
-
     else:
         print(len(cols), ' bulunamadi')
 
@@ -247,6 +265,8 @@ def getKonsolideFlagForOld(html):
             lambda tag: tag.name == 'table' and 'tablob' in tag['class'] if tag.has_attr('class') else False)
         konsolideText = wholeTables[0].find_all('tr')[1].find_all('td')[-1].text
     return konsolideText
+
+
 def getKonsolideFlag(html):
     if html:
         wholeTables = html.find_all(lambda tag: tag.name == 'table' and 'financial-header-table' in tag['class'])
@@ -259,6 +279,7 @@ def fromTexttoName(dataText):
     list = re.findall("\S+\s{0}", text)
     result = '-'.join(list)
     return result
+
 
 def getConsolidateFlag(html, old_f):
     if old_f:
@@ -288,5 +309,3 @@ def storeFrame2018(inputlist, outputname, outputpath):
     dataframe = pd.concat(inputlist)
     dataframe.to_pickle('{}/{}.pkl'.format(outputpath, outputname))
     dataframe.to_excel('/home/cem/Desktop/{}.xls'.format(outputname))
-
-
