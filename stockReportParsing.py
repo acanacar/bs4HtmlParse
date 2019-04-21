@@ -166,8 +166,16 @@ def getDataFrameNakit(table):
         # drop rows with all nan
         df = df.dropna(axis=0, how='all')
         return df
+    if len(cols) == 4:
+        new_cols = ['titles',
+                    'footnotes',
+                    cols[2], cols[3]]
+        df.columns = new_cols
+        df = df.dropna(axis=0, how='all')
+
+        return df
     else:
-        print('len(cols) 9 degil --> ', len(cols))
+        print('len(cols) 9 veya 4 degil --> ', len(cols))
 
 
 def getDataFrameBilanco(table):
