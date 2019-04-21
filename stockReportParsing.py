@@ -11,7 +11,7 @@ def doDiminish(x1, x2): return x1 - x2
 def renameCols(data):
     lokkup = {'03': '1', '06': '2', '09': '3', '12': '4'}
     newCols = []
-    for col in df.columns:
+    for col in data.columns:
         if col.startswith(('30', '31')):
             colv1 = col.replace('-', '.')
             collist = colv1.split('.')
@@ -231,6 +231,15 @@ def getDataFrameGelir(table):
         df = df.dropna(axis=0, how='all')
 
         return df
+    # old
+    if len(cols) == 6:
+        new_cols = ['titles', 'footnotes', cols[2], cols[3], cols[4], cols[5]]
+        df.columns = new_cols
+        df = df.dropna(axis=0, how='all')
+        return df
+    else:
+        print(len(cols), ' bulunamadi')
+
 
 def getKonsolideFlagForOld(html):
     if html:
