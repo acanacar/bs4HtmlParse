@@ -116,30 +116,30 @@ def fileNameSplit(file):
     return splittedFile[0], splittedFile[1], splittedFile[2], splittedFile[3]
 
 
-def get_table_titles_2017(table, *args):
-    tbody = table.find('tbody')
-    trows = tbody.findChildren('tr', recursive=False)
-    titles = {}
-    trowNumber = 0
-
-    for trow in trows:
-        if has_no_class(trow):
-            continue
-        elif trow['class'][0] == 'new-type-row':
-            continue
-        else:
-            tdatas = trow.find_all('td', recursive=False)
-            for tdata in tdatas:
-                if tdata.table:
-                    if tdata['class'][0] == 'taxonomy-field-title':
-                        text = tdata.text.replace('\n', '')
-                        list = re.findall("\S+\s{0}", text)
-                        name = '-'.join(list)
-                        titles[trowNumber] = name
-
-        trowNumber += 1
-
-    return titles
+# def get_table_titles_2017(table, *args):
+#     tbody = table.find('tbody')
+#     trows = tbody.findChildren('tr', recursive=False)
+#     titles = {}
+#     trowNumber = 0
+#
+#     for trow in trows:
+#         if has_no_class(trow):
+#             continue
+#         elif trow['class'][0] == 'new-type-row':
+#             continue
+#         else:
+#             tdatas = trow.find_all('td', recursive=False)
+#             for tdata in tdatas:
+#                 if tdata.table:
+#                     if tdata['class'][0] == 'taxonomy-field-title':
+#                         text = tdata.text.replace('\n', '')
+#                         list = re.findall("\S+\s{0}", text)
+#                         name = '-'.join(list)
+#                         titles[trowNumber] = name
+#
+#         trowNumber += 1
+#
+#     return titles
 
 
 def getHeaderandTable(Tables):
