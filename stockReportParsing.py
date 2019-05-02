@@ -142,14 +142,14 @@ def fileNameSplit(file):
 #     return titles
 
 
-def getHeaderandTable(Tables):
-    a = {}
-    for index, table in enumerate(Tables):
-        headers = get_table_titles_2017(table)
-        headersList = [[k, v] for k, v in headers.items()]
-        header = headersList[0][1]
-        a[header] = table
-    return a
+# def getHeaderandTable(Tables):
+#     a = {}
+#     for index, table in enumerate(Tables):
+#         headers = get_table_titles_2017(table)
+#         headersList = [[k, v] for k, v in headers.items()]
+#         header = headersList[0][1]
+#         a[header] = table
+#     return a
 
 
 def getDataFrameNakit(table):
