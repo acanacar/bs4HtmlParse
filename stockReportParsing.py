@@ -116,8 +116,6 @@ def fileNameSplit(file):
     return splittedFile[0], splittedFile[1], splittedFile[2], splittedFile[3]
 
 
-
-
 def getDataFrameNakit(table):
     # read table
     dfs = pd.read_html(table.prettify(), header=0)
@@ -279,7 +277,53 @@ def getOldFlag(year):
         return 0
 
 
-def storeFrame2018(inputlist, outputname, outputpath):
-    dataframe = pd.concat(inputlist)
-    dataframe.to_pickle('{}/{}.pkl'.format(outputpath, outputname))
-    dataframe.to_excel('/home/cem/Desktop/{}.xls'.format(outputname))
+def renameCols(data):
+    lokkup = {'03': '1', '06': '2', '09': '3', '12': '4'}
+    newCols = []
+    for col in data.columns:
+        colv1 = col.replace('Bir Önceki Dönem', '')
+        colv2 = colv1.replace('Cari Dönem', '')
+        colv3 = colv2.replace('Önceki Dönem', '')
+        colv4 = colv3.replace(' ', '')
+        if colv4.startswith(('30', '31')):
+            colv5 = colv4.replace('-', '.')
+            collist = colv5.split('.')
+            newCol = '{}-{}-{}'.format(collist[2], lokkup[collist[1]], collist[3])
+        if colv4.startswith('01'):
+            colv5 = colv4.split('-')[-1]
+            collist = colv5.split('.')
+            newCol = '{}-{}'.format(collist[2], lokkup[collist[1]])
+        else:
+            newCol = colv4
+        newCols.append(newCol)
+
+    data.columns = newCols
+    return data
+
+
+def createColDipToplam(data):
+    for i, r in data.iterrows():
+        try:
+            periodRow = r['period']
+            colToGet = '{}-{}-Toplam'.format(periodRow[:4], periodRow[-1:])
+        except Exception as e:
+            print(str(e), i)
+            continue
+        try:
+            if r[colToGet]:
+                data.loc[i, 'colDipToplam'] = r[colToGet]
+            else:
+                data.loc[i, 'colDipToplam'] = np.nan
+        except Exception as e:
+            print(str(e), i, '-')
+    return data
+
+
+def storeFrame(inputlist, outputname, outputpicklepath, outputexcelpath):
+    # inputlistRenamed = list(map(lambda x: renameCols(x), inputlist))
+    df = pd.concat(inputlist)
+    df = df.reset_index(drop=True)
+    # df = renameCols(df)
+    df = createColDipToplam(df)
+    df.to_pickle('{}/{}.pkl'.format(outputpicklepath, outputname))
+    df.to_excel('{}/{}.xls'.format(outputexcelpath, outputname))
