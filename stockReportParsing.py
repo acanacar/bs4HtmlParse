@@ -327,3 +327,86 @@ def storeFrame(inputlist, outputname, outputpicklepath, outputexcelpath):
     df = createColDipToplam(df)
     df.to_pickle('{}/{}.pkl'.format(outputpicklepath, outputname))
     df.to_excel('{}/{}.xls'.format(outputexcelpath, outputname))
+
+##
+
+import pandas as pd
+
+L_DURAN = ['TOPLAM DURAN VARLIKLAR']
+L_DONEN = ['TOPLAM DÖNEN VARLIKLAR']
+L_KVY = ['TOPLAM KISA VADELİ YÜKÜMLÜLÜKLER']
+L_UVY = ['TOPLAM UZUN VADELİ YÜKÜMLÜLÜKLER']
+L_OZV = ['TOPLAM ÖZKAYNAKLAR']
+
+
+def getParts(data,
+             duranList=L_DURAN,
+             donenList=L_DONEN,
+             kvyList=L_KVY,
+             uvyList=L_UVY,
+             ozvList=L_OZV,
+             ):
+    id_Donen = data.index[data['titles'].isin(donenList)][0]
+    id_Duran = data.index[data['titles'].isin(duranList)][0]
+    id_KVY = data.index[data['titles'].isin(kvyList)][0]
+    id_UVY = data.index[data['titles'].isin(uvyList)][0]
+    id_OZV = data.index[data['titles'].isin(ozvList)][0]
+    data_Donen = data.loc[:id_Donen].reset_index(drop=True)
+    data_Duran = data.loc[id_Donen + 1:id_Duran].reset_index(drop=True)
+    data_KVY = data.loc[id_Duran + 1:id_KVY].reset_index(drop=True)
+    data_UVY = data.loc[id_KVY + 1:id_UVY].reset_index(drop=True)
+    data_OZV = data.loc[id_UVY + 1:id_OZV].reset_index(drop=True)
+    return data_Duran, data_Donen, data_KVY, data_UVY, data_OZV
+
+
+def Insert_row_(row_number, df, row_value):
+    # Slice the upper half of the dataframe
+    df1 = df[0:row_number]
+    # Store the result of lower half of the dataframe
+    df2 = df[row_number:]
+    # Inser the row in the upper half dataframe
+    df1.loc[row_number] = row_value
+    # Concat the two dataframes
+    df_result = pd.concat([df1, df2])
+    # Reassign the index labels
+    df_result.index = [*range(df_result.shape[0])]
+    # Return the updated dataframe
+    return df_result
+
+
+def removeUnnecessaryTitles(data, lookup):
+    idx = data.index[~data['titles'].isin(lookup['titles'].values)].tolist()
+    data = data.drop(idx).reset_index(drop=True)
+    return data
+
+
+def addNonexistedCevrimTitle(data, lookup):
+    l = data['titles'].values
+    print(l)
+    for i, r in lookup.iterrows():
+
+        row_title = data.loc[i, 'titles']
+        lookuptitle = r['titles']
+        if lookuptitle not in l:
+            print(lookuptitle, 'ekleniyor')
+            data = Insert_row_(row_number=i, df=data, row_value=[lookuptitle, 0])
+    return data
+
+
+def operation(data, lookup):
+    data = removeUnnecessaryTitles(data, lookup)
+    data = addNonexistedCevrimTitle(data, lookup)
+    return data
+
+
+
+def executeFull(data,lookupdata):
+    data_duran, data_donen, data_KVY, data_UVY, data_OZV = getParts(data=data)
+    cevrim_Duran, cevrim_Donen, cevrim_KVY, cevrim_UVY, cevrim_OZV = getParts(data=lookupdata)
+    data_donen = operation(data=data_donen, lookup=cevrim_Donen)
+    data_duran = operation(data=data_duran, lookup=cevrim_Duran)
+    data_KVY = operation(data=data_KVY, lookup=cevrim_KVY)
+    data_UVY = operation(data=data_UVY, lookup=cevrim_UVY)
+    data_OZV = operation(data=data_OZV, lookup=cevrim_OZV)
+    return data_donen, data_duran, data_KVY, data_UVY, data_OZV
+
