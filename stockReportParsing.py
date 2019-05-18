@@ -410,3 +410,25 @@ def executeFull(data,lookupdata):
     data_OZV = operation(data=data_OZV, lookup=cevrim_OZV)
     return data_donen, data_duran, data_KVY, data_UVY, data_OZV
 
+
+def storeBilancoDfsAsDict(stocks,periods,lookupdata):
+    a = {}
+    for stock in stocks:
+        c = {}
+        for period in periods:
+            path = '/home/cem/PycharmProjects/htmlParseInf/outputs/pickles/subPartTitle/k-bilanco/{}-{}.pkl'.format(
+                stock,
+                period)
+            try:
+                df = pd.read_pickle(path)
+                donen, duran, kvy, uvy, ozv = executeFull(data=df, lookupdata=lookupdata)
+                c[period] = pd.concat([donen, duran, kvy, uvy, ozv])
+                print('{} {} is finished'.format(stock, period))
+            except Exception as e:
+                print(str(e))
+                print('{} - {} bulunamadi'.format(stock, period))
+                continue
+        a[stock] = c
+    return a
+
+
