@@ -32,7 +32,7 @@ def my_reduce(func, seq):
     ind = 0
     while ind < len(seq[1:]):
         item = seq[1:][ind]
-        # next item is greater than current item
+        
         if first < item:
             return np.nan
         else:
@@ -55,7 +55,7 @@ def my_reduce_w_range(func, seq, range):
     ind = 0
     while ind < len(seq[1:]):
         item = seq[1:][ind]
-        # next item is greater than current item
+         
         if first < item:
             return np.nan
         else:
@@ -95,7 +95,6 @@ def flagDipToplam(data, step):
 
 
 def runSubTotal(data, maxstep):
-    # coldiptoplam converting into float
     data['colDipToplam'] = data['colDipToplam'].astype(str).str.replace('.', '').astype(float)
     datav2 = data.copy()
     for i in range(1, maxstep):
@@ -117,7 +116,6 @@ def fileNameSplit(file):
 
 
 def getDataFrameNakit(table):
-    # read table
     dfs = pd.read_html(table.prettify(), header=0)
     df = dfs[0]
     cols = list(df.columns)
@@ -127,7 +125,6 @@ def getDataFrameNakit(table):
                     'footnotes',
                     cols[1], cols[2]]
         df.columns = new_cols
-        # drop rows with all nan
         df = df.dropna(axis=0, how='all')
         return df
     if len(cols) == 4:
