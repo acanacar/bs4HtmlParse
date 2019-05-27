@@ -32,6 +32,7 @@ def my_reduce(func, seq):
     ind = 0
     while ind < len(seq[1:]):
         item = seq[1:][ind]
+
         if first < item:
             return np.nan
         else:
@@ -54,7 +55,7 @@ def my_reduce_w_range(func, seq, range):
     ind = 0
     while ind < len(seq[1:]):
         item = seq[1:][ind]
-        # next item is greater than current item
+
         if first < item:
             return np.nan
         else:
@@ -139,6 +140,7 @@ def getDataFrameNakit(table):
 
 
 def getDataFrameBilanco(table):
+    # read table
     dfs = pd.read_html(table.prettify(), header=0)
     df = dfs[0]
     cols = list(df.columns)
@@ -147,7 +149,9 @@ def getDataFrameBilanco(table):
         new_cols = ['titles',
                     'footnotes',
                     cols[1] + '-Toplam', cols[2] + '-Toplam']
+        # replace old cari donem col name with titles
         df.columns = new_cols
+        # drop rows with all nan
         df = df.dropna(axis=0, how='all')
         return df
     if len(cols) == 13:
@@ -189,6 +193,7 @@ def getDataFrameBilanco(table):
 
 
 def getDataFrameGelir(table):
+    # read table
     dfs = pd.read_html(table.prettify(), header=0)
     df = dfs[0]
     cols = list(df.columns)
@@ -198,7 +203,9 @@ def getDataFrameGelir(table):
                     'footnotes',
                     cols[1], cols[2], cols[3], cols[4]
                     ]
+        # replace old cari donem col name with titles
         df.columns = new_cols
+        # drop rows with all nan
         df = df.dropna(axis=0, how='all')
         return df
     if len(cols) == 10:
@@ -318,6 +325,7 @@ def storeFrame(inputlist, outputname, outputpicklepath, outputexcelpath):
     df.to_pickle('{}/{}.pkl'.format(outputpicklepath, outputname))
     df.to_excel('{}/{}.xls'.format(outputexcelpath, outputname))
 
+
 ##
 
 import pandas as pd
@@ -389,8 +397,7 @@ def operation(data, lookup):
     return data
 
 
-
-def executeFull(data,lookupdata):
+def executeFull(data, lookupdata):
     data_duran, data_donen, data_KVY, data_UVY, data_OZV = getParts(data=data)
     cevrim_Duran, cevrim_Donen, cevrim_KVY, cevrim_UVY, cevrim_OZV = getParts(data=lookupdata)
     data_donen = operation(data=data_donen, lookup=cevrim_Donen)
@@ -401,7 +408,7 @@ def executeFull(data,lookupdata):
     return data_donen, data_duran, data_KVY, data_UVY, data_OZV
 
 
-def storeBilancoDfsAsDict(stocks,periods,lookupdata):
+def storeBilancoDfsAsDict(stocks, periods, lookupdata):
     a = {}
     for stock in stocks:
         c = {}
@@ -420,5 +427,4 @@ def storeBilancoDfsAsDict(stocks,periods,lookupdata):
                 continue
         a[stock] = c
     return a
-
 
