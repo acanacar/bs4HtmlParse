@@ -32,7 +32,6 @@ def my_reduce(func, seq):
     ind = 0
     while ind < len(seq[1:]):
         item = seq[1:][ind]
-        # next item is greater than current item
         if first < item:
             return np.nan
         else:
@@ -95,7 +94,6 @@ def flagDipToplam(data, step):
 
 
 def runSubTotal(data, maxstep):
-    # coldiptoplam converting into float
     data['colDipToplam'] = data['colDipToplam'].astype(str).str.replace('.', '').astype(float)
     datav2 = data.copy()
     for i in range(1, maxstep):
@@ -117,7 +115,6 @@ def fileNameSplit(file):
 
 
 def getDataFrameNakit(table):
-    # read table
     dfs = pd.read_html(table.prettify(), header=0)
     df = dfs[0]
     cols = list(df.columns)
@@ -127,7 +124,6 @@ def getDataFrameNakit(table):
                     'footnotes',
                     cols[1], cols[2]]
         df.columns = new_cols
-        # drop rows with all nan
         df = df.dropna(axis=0, how='all')
         return df
     if len(cols) == 4:
@@ -143,7 +139,6 @@ def getDataFrameNakit(table):
 
 
 def getDataFrameBilanco(table):
-    # read table
     dfs = pd.read_html(table.prettify(), header=0)
     df = dfs[0]
     cols = list(df.columns)
@@ -152,9 +147,7 @@ def getDataFrameBilanco(table):
         new_cols = ['titles',
                     'footnotes',
                     cols[1] + '-Toplam', cols[2] + '-Toplam']
-        # replace old cari donem col name with titles
         df.columns = new_cols
-        # drop rows with all nan
         df = df.dropna(axis=0, how='all')
         return df
     if len(cols) == 13:
@@ -196,7 +189,6 @@ def getDataFrameBilanco(table):
 
 
 def getDataFrameGelir(table):
-    # read table
     dfs = pd.read_html(table.prettify(), header=0)
     df = dfs[0]
     cols = list(df.columns)
@@ -206,9 +198,7 @@ def getDataFrameGelir(table):
                     'footnotes',
                     cols[1], cols[2], cols[3], cols[4]
                     ]
-        # replace old cari donem col name with titles
         df.columns = new_cols
-        # drop rows with all nan
         df = df.dropna(axis=0, how='all')
         return df
     if len(cols) == 10:
