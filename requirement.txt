@@ -34,7 +34,7 @@ jupyter-console==6.0.0
 jupyter-core==4.4.0
 Logbook==1.4.1
 lru-dict==1.1.6
-lxml==4.3.0
+lxml==4.6.2
 Mako==1.0.7
 MarkupSafe==1.1.0
 MechanicalSoup==0.11.0
